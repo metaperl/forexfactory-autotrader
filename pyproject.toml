@@ -6,6 +6,7 @@ authors = ["Terrence Brannon <metaperl@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+atom = "^0.5.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
