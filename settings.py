@@ -11,8 +11,7 @@ from pydantic import (
 
 class Settings(BaseSettings):
 
-    # trader = 'ratmach'
-    trader = 'Belleblue'
+    trade_explorer_url = 'https://www.forexfactory.com/belleblue#acct.94-tab.overview-explorer'
 
     lot_size = 0.01
     
