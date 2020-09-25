@@ -1,0 +1,8 @@
+from bs4 import BeautifulSoup
+
+with open('page.html') as p:
+    html = p.read()
+
+soup = BeautifulSoup(html, 'html.parser')
+
+print(soup.prettify())
