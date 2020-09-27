@@ -1,8 +1,8 @@
-
-
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+
+from loguru import logger
 
 import csv
 import os.path
@@ -12,6 +12,7 @@ import re
 from atom.api import Atom, Str, Value, Property, Float
 from bs4 import BeautifulSoup
 
+from forexfactory_autotrader import db, mt5
 from settings import settings
 
 base_url = 'http://forexfactory.com/'
@@ -22,7 +23,15 @@ class Trade(Atom):
     id = Str()
     symbol = Str()
     direction = Str()
-    price = Float()
+    price = Str()
+
+    def __str__(self):
+        return f"""Trade
+            id={self.id}
+            symbol={self.symbol}
+            direction={self.direction}
+            price={self.price}
+"""
 
 
 def driver():
@@ -74,16 +83,36 @@ def open_trade_list():
     for i, tr in enumerate((tables[0].find_all('tbody', recursive=True))[0].find_all('tr')):
         trade = tr.find_all('span')[0].text
         if trade:
-            print(f"TRADE = -{trade}-")
+            href = tr.find('a', recursive=True).get('href')
+            print(f"TRADE = -{trade}- HREF={href}")
             print(f" * * * BEGIN {i} {tr=} ^ ^ ^ END {i}")
             symbol, direction, price = trade.split()
-            trades.append(Trade(symbol=symbol, direction=direction, price=float(price)))
+            trades.append(Trade(id=href, symbol=symbol, direction=direction, price=price))
 
     return trades
 
 
+def unopened_trades(open_trades):
+    ids_of_open_trades = {o.id:o for o in open_trades}
+
+    ids_of_placed_trades = [row for row, in db.session.query(db.PlacedTrades.id)]
+    unplaced_trade_ids = set(ids_of_open_trades.keys() - ids_of_placed_trades)
+    result = [ids_of_open_trades[u] for u in unplaced_trade_ids]
+
+    return result
+
+
+def open_new_trades(open_trades):
+    for new_trade in unopened_trades(open_trades):
+        logger.debug(f"Unopened trade = {new_trade}. Opening")
+        order_ticket = mt5.market_order(new_trade)
+        if order_ticket:
+            logger.debug(f"Order placed via {order_ticket=}")
+
 
 if __name__ == '__main__':
 
-    print(open_trade_list())
+    _ = open_trade_list()
+    logger.debug(f"Open trade list={_}")
+    open_new_trades(_)
     

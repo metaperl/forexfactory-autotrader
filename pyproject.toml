@@ -7,6 +7,8 @@ authors = ["Terrence Brannon <metaperl@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 atom = "^0.5.2"
+sqlalchemy = "^1.3.19"
+pymt5adapter = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
