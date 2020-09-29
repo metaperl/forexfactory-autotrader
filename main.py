@@ -25,6 +25,7 @@ class Trade(Atom):
     direction = Str()
     price = Str()
 
+
     def __str__(self):
         return f"""Trade
             id={self.id}
@@ -92,23 +93,35 @@ def open_trade_list():
     return trades
 
 
-def unopened_trades(open_trades):
+def trade_status(open_trades):
     ids_of_open_trades = {o.id:o for o in open_trades}
+    ids_of_placed_trades = set([row for row, in db.session.query(db.PlacedTrades.id)])
 
-    ids_of_placed_trades = [row for row, in db.session.query(db.PlacedTrades.id)]
-    unplaced_trade_ids = set(ids_of_open_trades.keys() - ids_of_placed_trades)
-    result = [ids_of_open_trades[u] for u in unplaced_trade_ids]
+    unplaced_trade_ids = set(ids_of_open_trades.keys()) - ids_of_placed_trades
+    closed_trade_ids = ids_of_placed_trades - set(ids_of_open_trades.keys())
+    # main.Trade instances
+    unplaced_trade_objects = [ids_of_open_trades[u] for u in unplaced_trade_ids]
+    # db.PlacedTrade instances
+    closed_trade_objects = [db.session.query.get(i) for i in closed_trade_ids]
 
-    return result
+    return unplaced_trade_objects, closed_trade_objects
 
 
 def open_new_trades(open_trades):
-    for new_trade in unopened_trades(open_trades):
+    unopened_trade_objects, closed_trade_objects = trade_status(open_trades)
+    # Open new trades
+    for new_trade in unopened_trade_objects:
         logger.debug(f"Unopened trade = {new_trade}. Opening")
         order_ticket = mt5.market_order(new_trade)
         if order_ticket:
             logger.debug(f"Order placed via {order_ticket=}")
 
+    # Close trades no longer open
+    for closed_trade in closed_trade_objects:
+        logger.debug(f"Closed trade = {closed_trade}. Closing")
+        order_ticket = mt5.close_trade(closed_trade)
+        if order_ticket:
+            logger.debug(f"Order placed via {order_ticket=}")
 
 if __name__ == '__main__':
 

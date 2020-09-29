@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, Float, Integer
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
@@ -18,8 +18,11 @@ class PlacedTrades(Base):
 
     id = Column(String, primary_key=True)
     symbol = Column(String)
+    direction = Column(String)
     price = Column(String)
-    trade_id = Column(String)
+    volume = Column(Float)
+    trade_id = Column(Integer)
+    # magic = Column(Integer)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 

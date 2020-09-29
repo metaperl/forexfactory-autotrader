@@ -38,7 +38,7 @@ def market_order(trade):
             server='AAFX-DEMO',
             login=9015,
             password='a1SkwRBUyc',
-            logger=my_logger,
+            logger=my_logger
         )
 
         res = order.send()
@@ -49,3 +49,18 @@ def market_order(trade):
         else:
             print('trade error', pymt5.trade_retcode_description(retcode))
 
+def close_trade(placed_trade):
+    position = pymt5.TradePosition()
+    position.ticket = placed_trade.trade_id
+    position.symbol = placed_trade.symbol
+    position.volume = placed_trade.volume
+    position.magic = None
+    order = Order.as_flatten(position)
+    res = order.send()
+
+    retcode = pymt5.TRADE_RETCODE(res.retcode)
+    if retcode is pymt5.TRADE_RETCODE.DONE:
+        print('done')
+        return res.order
+    else:
+        print('trade error', pymt5.trade_retcode_description(retcode))
