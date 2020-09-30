@@ -109,6 +109,8 @@ def trade_status(open_trades):
 
 def open_new_trades(open_trades):
     unopened_trade_objects, closed_trade_objects = trade_status(open_trades)
+    logger.debug(f"{unopened_trade_objects=}, {closed_trade_objects=}")
+
     # Open new trades
     for new_trade in unopened_trade_objects:
         logger.debug(f"Unopened trade = {new_trade}. Opening")
